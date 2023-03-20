@@ -160,7 +160,7 @@ void HintManager::EndHintAction(const std::string &hint_type) {
 }
 
 bool HintManager::DoHint(const std::string& hint_type) {
-    LOG(VERBOSE) << "Do Powerhint: " << hint_type;
+    LOG(INFO) << "Do Powerhint: " << hint_type;
     if (!ValidateHint(hint_type) || !IsHintEnabled(hint_type) ||
         !nm_->Request(actions_.at(hint_type).node_actions, hint_type)) {
         return false;
@@ -172,7 +172,7 @@ bool HintManager::DoHint(const std::string& hint_type) {
 
 bool HintManager::DoHint(const std::string& hint_type,
                          std::chrono::milliseconds timeout_ms_override) {
-    LOG(VERBOSE) << "Do Powerhint: " << hint_type << " for "
+    LOG(INFO) << "Do Powerhint: " << hint_type << " for "
                  << timeout_ms_override.count() << "ms";
     if (!ValidateHint(hint_type) || !IsHintEnabled(hint_type)) {
         return false;
@@ -190,7 +190,7 @@ bool HintManager::DoHint(const std::string& hint_type,
 }
 
 bool HintManager::EndHint(const std::string& hint_type) {
-    LOG(VERBOSE) << "End Powerhint: " << hint_type;
+    LOG(INFO) << "End Powerhint: " << hint_type;
     if (!ValidateHint(hint_type) || !nm_->Cancel(actions_.at(hint_type).node_actions, hint_type)) {
         return false;
     }
@@ -279,11 +279,21 @@ bool HintManager::Start() {
 std::shared_ptr<HintManager> HintManager::mInstance = nullptr;
 
 std::shared_ptr<HintManager> HintManager::Reload(bool start) {
-    std::string config_path = "/vendor/etc/";
+
     if (android::base::GetBoolProperty(kConfigDebugPathProperty.data(), false)) {
-        config_path = "/data/vendor/etc/";
-        LOG(WARNING) << "Pixel Power HAL AIDL Service is using debug config from: " << config_path;
+        std::string debug_config_path = "/data/vendor/etc/";
+        debug_config_path.append(
+            android::base::GetProperty(kConfigProperty.data(), kConfigDefaultFileName.data()));
+
+        LOG(WARNING) << "Pixel Power HAL AIDL Service is using debug config from: " << debug_config_path;
+        mInstance = HintManager::GetFromJSON(debug_config_path, start);
+        if (mInstance) {
+            return mInstance;
+        }
+        LOG(FATAL) << "Invalid debug config: " << debug_config_path;
     }
+
+    std::string config_path = "/vendor/etc/";
     config_path.append(
             android::base::GetProperty(kConfigProperty.data(), kConfigDefaultFileName.data()));
 
