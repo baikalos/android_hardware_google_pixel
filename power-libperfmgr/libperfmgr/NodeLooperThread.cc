@@ -39,7 +39,20 @@ bool NodeLooperThread::Request(const std::vector<NodeAction>& actions,
 
     bool ret = true;
     ::android::AutoMutex _l(lock_);
-    for (const auto& a : actions) {
+    for (/*const*/ auto& a : actions) {
+        //LOG(INFO) << "Index:" << a.node_index << ", Value:" << a.value_index << ", EnablePorperty:" << a.enable_property;
+        //LOG(INFO) << "Index:" << a.node_index << ", Value:" << a.value_index << ", OverrideProperty:" << a.override_property.c_str();
+
+        int value_index = a.value_index;
+
+        if (!a.override_property.empty() )  {
+            int pvalue = android::base::GetIntProperty(a.override_property, -99999);
+            if( pvalue != -99999 ) {
+                // LOG(INFO) << "Index:" << a.node_index << ", Value:" << a.value_index << ", OverrideProperty:" << a.override_property.c_str() << ", override:" << pvalue;
+                value_index = pvalue;
+            }
+        }
+
         if (!a.enable_property.empty() &&
             !android::base::GetBoolProperty(a.enable_property, true)) {
             // Disabled action based on its control property
@@ -62,7 +75,7 @@ bool NodeLooperThread::Request(const std::vector<NodeAction>& actions,
                     end_time = now + a.timeout_ms;
                 }
             }
-            ret = nodes_[a.node_index]->AddRequest(a.value_index, hint_type,
+            ret = nodes_[a.node_index]->AddRequest(value_index, hint_type,
                                                    end_time) &&
                   ret;
         }

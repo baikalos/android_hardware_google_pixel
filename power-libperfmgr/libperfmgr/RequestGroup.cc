@@ -59,6 +59,7 @@ bool RequestGroup::GetExpireTime(std::chrono::milliseconds* expire_time) {
         } else {
             *expire_time = std::min(duration, *expire_time);
             active = true;
+            //LOG(INFO) << "GetExpireTime first:" << it->first << ", second:" << duration.count();
             ++it;
         }
     }

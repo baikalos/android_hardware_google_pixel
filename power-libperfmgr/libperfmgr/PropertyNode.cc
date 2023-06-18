@@ -47,14 +47,21 @@ std::chrono::milliseconds PropertyNode::Update(bool) {
         }
     }
 
+
+    const std::string& req_value =
+            req_sorted_[value_index].GetRequestValue();
+
+    //LOG(WARNING) << "Set property to : " << node_path_  << " with value: " << req_value << " index: " << value_index << " curr_index: " << current_val_index_ << " reset: " << reset_on_init_;
+
     // Update node only if request index changes
     if (value_index != current_val_index_ || reset_on_init_) {
-        const std::string& req_value =
-            req_sorted_[value_index].GetRequestValue();
         if (ATRACE_ENABLED()) {
             const std::string tag = GetName() + ":" + req_value;
             ATRACE_BEGIN(tag.c_str());
         }
+
+        //LOG(WARNING) << "Set property to : " << node_path_  << " with value: " << req_value;
+
         if (!android::base::SetProperty(node_path_, req_value)) {
             LOG(WARNING) << "Failed to set property to : " << node_path_
                          << " with value: " << req_value;

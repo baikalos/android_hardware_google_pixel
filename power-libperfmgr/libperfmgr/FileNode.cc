@@ -39,21 +39,28 @@ FileNode::FileNode(std::string name, std::string node_path, std::vector<RequestG
       warn_timeout_(android::base::GetBoolProperty("ro.debuggable", false) ? 5ms : 50ms) {}
 
 std::chrono::milliseconds FileNode::Update(bool log_error) {
+
     std::size_t value_index = default_val_index_;
     std::chrono::milliseconds expire_time = std::chrono::milliseconds::max();
-
+    bool is_default = true;
+    log_error = true;
+    
     // Find the highest outstanding request's expire time
     for (std::size_t i = 0; i < req_sorted_.size(); i++) {
         if (req_sorted_[i].GetExpireTime(&expire_time)) {
             value_index = i;
+            is_default = false;
             break;
         }
     }
 
+    const std::string& req_value =
+            req_sorted_[value_index].GetRequestValue();
+
+    //if (log_error) LOG(WARNING) << "Writing to node (default=" << is_default << "): " << node_path_  << " with value: " << req_value << ", fd: " << fd_ << " index: " << value_index << " cur_index: " << current_val_index_ << " reset:" <<  reset_on_init_;
+
     // Update node only if request index changes
     if (value_index != current_val_index_ || reset_on_init_) {
-        const std::string& req_value =
-            req_sorted_[value_index].GetRequestValue();
         if (ATRACE_ENABLED()) {
             const std::string tag = GetName() + ":" + req_value;
             ATRACE_BEGIN(tag.c_str());
@@ -64,6 +71,7 @@ std::chrono::milliseconds FileNode::Update(bool log_error) {
             flags |= O_TRUNC;
         }
         fd_.reset(TEMP_FAILURE_RETRY(open(node_path_.c_str(), flags)));
+
 
         if (fd_ == -1 || !android::base::WriteStringToFd(req_value, fd_)) {
             if (log_error) {

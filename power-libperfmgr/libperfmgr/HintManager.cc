@@ -165,7 +165,7 @@ void HintManager::EndHintAction(const std::string &hint_type) {
 }
 
 bool HintManager::DoHint(const std::string& hint_type) {
-    LOG(INFO) << "Do Powerhint: " << hint_type;
+    LOG(DEBUG) << "Do Powerhint: " << hint_type;
     if (!ValidateHint(hint_type) || !IsHintEnabled(hint_type) ||
         !nm_->Request(actions_.at(hint_type).node_actions, hint_type)) {
         return false;
@@ -177,7 +177,7 @@ bool HintManager::DoHint(const std::string& hint_type) {
 
 bool HintManager::DoHint(const std::string& hint_type,
                          std::chrono::milliseconds timeout_ms_override) {
-    LOG(INFO) << "Do Powerhint: " << hint_type << " for "
+    LOG(DEBUG) << "Do Powerhint: " << hint_type << " for "
                  << timeout_ms_override.count() << "ms";
     if (!ValidateHint(hint_type) || !IsHintEnabled(hint_type)) {
         return false;
@@ -195,7 +195,7 @@ bool HintManager::DoHint(const std::string& hint_type,
 }
 
 bool HintManager::EndHint(const std::string& hint_type) {
-    LOG(INFO) << "End Powerhint: " << hint_type;
+    LOG(DEBUG) << "End Powerhint: " << hint_type;
     if (!ValidateHint(hint_type) || !nm_->Cancel(actions_.at(hint_type).node_actions, hint_type)) {
         return false;
     }
@@ -553,6 +553,7 @@ std::unordered_map<std::string, Hint> HintManager::ParseActions(
         HintActionType action_type = HintActionType::Node;
         std::string type_string = actions[i]["Type"].asString();
         std::string enable_property = actions[i]["EnableProperty"].asString();
+        std::string override_property = actions[i]["OverrideProperty"].asString();
         LOG(VERBOSE) << "Action[" << i << "]'s Type: " << type_string;
         if (type_string.empty()) {
             LOG(VERBOSE) << "Failed to read "
@@ -615,7 +616,7 @@ std::unordered_map<std::string, Hint> HintManager::ParseActions(
                 }
             }
             actions_parsed[hint_type].node_actions.emplace_back(
-                    node_index, value_index, std::chrono::milliseconds(duration), enable_property);
+                    node_index, value_index, std::chrono::milliseconds(duration), enable_property, override_property);
 
         } else {
             const std::string &hint_value = actions[i]["Value"].asString();
