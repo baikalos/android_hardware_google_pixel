@@ -171,7 +171,7 @@ SupportInfo SupportManager::makeSupportInfo() {
 bool SupportManager::modeSupported(Mode type) {
     auto it = kModeEarliestVersionMap.find(type);
     if (it == kModeEarliestVersionMap.end() || IPower::version < it->second) {
-        return false;
+        //return false;
     }
     bool supported = HintManager::GetInstance()->IsHintSupported(toString(type));
     // LOW_POWER handled insides PowerHAL specifically
@@ -187,7 +187,7 @@ bool SupportManager::modeSupported(Mode type) {
 bool SupportManager::boostSupported(Boost type) {
     auto it = kBoostEarliestVersionMap.find(type);
     if (it == kBoostEarliestVersionMap.end() || IPower::version < it->second) {
-        return false;
+        //return false;
     }
     bool supported = HintManager::GetInstance()->IsHintSupported(toString(type));
     if (!supported && HintManager::GetInstance()->IsAdpfProfileSupported(toString(type))) {
@@ -199,11 +199,11 @@ bool SupportManager::boostSupported(Boost type) {
 bool SupportManager::sessionHintSupported(SessionHint type) {
     auto it = kSessionHintEarliestVersionMap.find(type);
     if (it == kSessionHintEarliestVersionMap.end() || IPower::version < it->second) {
-        return false;
+        //return false;
     }
     switch (type) {
-        case SessionHint::POWER_EFFICIENCY:
-            return false;
+        //case SessionHint::POWER_EFFICIENCY:
+        //    return false;
         default:
             return true;
     }
@@ -215,12 +215,12 @@ bool SupportManager::sessionModeSupported(SessionMode type) {
         return false;
     }
     switch (type) {
-        case SessionMode::POWER_EFFICIENCY:
-            return false;
-        case SessionMode::GRAPHICS_PIPELINE:
-            return false;
-        case SessionMode::AUDIO_PERFORMANCE:
-            return false;
+        //case SessionMode::POWER_EFFICIENCY:
+        //    return false;
+        //case SessionMode::GRAPHICS_PIPELINE:
+        //    return false;
+        //case SessionMode::AUDIO_PERFORMANCE:
+        //    return false;
         default:
             return true;
     }
@@ -229,7 +229,7 @@ bool SupportManager::sessionModeSupported(SessionMode type) {
 bool SupportManager::sessionTagSupported(SessionTag type) {
     auto it = kSessionTagEarliestVersionMap.find(type);
     if (it == kSessionTagEarliestVersionMap.end() || IPower::version < it->second) {
-        return false;
+        //return false;
     }
     return true;
 }

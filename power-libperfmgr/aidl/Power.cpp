@@ -198,6 +198,10 @@ ndk::ScopedAStatus Power::isModeSupported(Mode type, bool *_aidl_return) {
 ndk::ScopedAStatus Power::setBoost(Boost type, int32_t durationMs) {
     LOG(DEBUG) << "Power setBoost: " << toString(type) << " duration: " << durationMs;
     ATRACE_NAME(("B:" + toString(type) + ":" + std::to_string(durationMs)).c_str());
+    if( durationMs < 0 ) {
+        LOG(WARNING) << "Power setBoost: invalid duration value:" << toString(type) << " duration: " << durationMs;
+        durationMs = 0;
+    }
     switch (type) {
         case Boost::INTERACTION:
             if (mVRModeOn || mSustainedPerfModeOn) {
@@ -235,7 +239,7 @@ ndk::ScopedAStatus Power::setBoost(Boost type, int32_t durationMs) {
 
 ndk::ScopedAStatus Power::isBoostSupported(Boost type, bool *_aidl_return) {
     bool supported = supportFromBitset(mSupportInfo.boosts, type);
-    LOG(INFO) << "Power oost " << toString(type) << " isBoostSupported: " << supported;
+    LOG(INFO) << "Power boost " << toString(type) << " isBoostSupported: " << supported;
     *_aidl_return = supported;
     return ndk::ScopedAStatus::ok();
 }
