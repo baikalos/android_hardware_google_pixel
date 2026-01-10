@@ -761,6 +761,7 @@ std::unordered_map<std::string, Hint> HintManager::ParseActions(
         std::string enable_property = actions[i]["EnableProperty"].asString();
         std::string enable_flag = actions[i]["EnableFlag"].asString();
         std::string disable_flag = actions[i]["DisableFlag"].asString();
+        std::string override_property = actions[i]["OverrideProperty"].asString();
         LOG(VERBOSE) << "Action[" << i << "]'s Type: " << type_string;
         if (type_string.empty()) {
             LOG(VERBOSE) << "Failed to read "
@@ -822,6 +823,15 @@ std::unordered_map<std::string, Hint> HintManager::ParseActions(
                     return actions_parsed;
                 }
             }
+
+            if (!override_property.empty() )  {
+                int pvalue = android::base::GetIntProperty(override_property, -99999);
+                if( pvalue != -99999 ) {
+                    LOG(INFO) << "Index:" << node_index << ", Value:" << value_index << ", OverrideProperty:" << override_property.c_str() << ", override:" << pvalue;
+                    value_index = pvalue;
+                }
+            }
+
             actions_parsed[hint_type].node_actions.emplace_back(
                     node_index, value_index, std::chrono::milliseconds(duration), enable_property,
                     enable_flag, disable_flag);
@@ -858,10 +868,9 @@ std::unordered_map<std::string, Hint> HintManager::ParseActions(
                   "Parser type mismatch");                                                       \
     if (adpfs[i][ENTRY].empty() || !adpfs[i][ENTRY].is##TYPE()) {                                \
         LOG(ERROR) << "Failed to read AdpfConfig[" << name << "][" ENTRY "]'s Values";           \
-        adpfs_parsed.clear();                                                                    \
-        return adpfs_parsed;                                                                     \
-    }                                                                                            \
-    VARIABLE = adpfs[i][ENTRY].as##TYPE()
+    } else {                                                                                     \
+        VARIABLE = adpfs[i][ENTRY].as##TYPE(); \
+    }
 
 #define ADPF_PARSE_OPTIONAL(VARIABLE, ENTRY, TYPE)                     \
     static_assert(std::is_same<decltype(adpfs[i][ENTRY].as##TYPE()),   \
